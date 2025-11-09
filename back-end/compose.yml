@@ -1,0 +1,46 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      - 'MYSQL_ROOT_PASSWORD= root'
+      - 'MYSQL_DATABASE= dentalapp'
+      - 'MYSQL_USER= system'
+      - 'MYSQL_PASSWORD= manager'
+    volumes:
+      - auth_mysql_data:/var/lib/mysql
+    ports:
+      - "3308:3306"
+    networks:
+      - my-dental-net
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    networks:
+      - my-dental-net
+  auth:
+    image: eclipse-temurin:17-jdk
+    container_name: auth-service-dev
+    working_dir: /workspace
+    ports:
+      - "8081:8080"
+      - "5005:5005"
+    volumes:
+      - ./auth-service:/workspace:cached
+      - ~/.m2:/root/.m2               # share maven cache (optional)
+    command: >
+      sh -c "chmod +x mvnw && ./mvnw -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005' spring-boot:run"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - my-dental-net
+  # include db and redis same as in main compose or use "extends" / import
+volumes:
+  auth_mysql_data:
+  auth_redis_data:
+
+networks:
+  my-dental-net:
+    driver: bridge
