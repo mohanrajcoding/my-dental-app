@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3360/dentaldb
+    username: root
+    password: root
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+app:
+  jwt:
+    secret: your-very-secret-key-123456789012
+    access-token-validity-seconds: 900         # 15 minutes
+    #refresh-token-validity-seconds: 2592000
+  logging:
+    path: ./logs
+    debug:
+      level: DEBUG
+
+
+server:
+  port: 8081
+
