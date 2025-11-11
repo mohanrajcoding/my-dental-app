@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(AuthServiceException.class)
-    public ResponseEntity<Map<String,String>> authServiceException(AuthServiceException message){
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<Map<String,String>> handleBusinessException(BusinessException message){
         return ResponseEntity.ok(Collections.singletonMap("message", message.getMessage()));
     }
 }

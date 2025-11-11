@@ -1,13 +1,10 @@
 package com.auth_service.security;
 
 import com.auth_service.entity.AppUser;
-import com.auth_service.logging.LogManager;
+import com.auth_service.exception.SystemException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-//import lombok.RequiredArgsConstructor;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -21,15 +18,13 @@ public class JwtUtil {
     private final String secretKey;
     private final long jwtExpirationMs;
     private Key key;
-    private final LogManager logManager;
 
     public JwtUtil(
             @Value("${app.jwt.secret}") String secretKey,
-            @Value("${app.jwt.access-token-validity-seconds}") long jwtExpirationSeconds, LogManager logManager
+            @Value("${app.jwt.access-token-validity-seconds}") long jwtExpirationSeconds
     ) {
         this.secretKey = secretKey;
         this.jwtExpirationMs = jwtExpirationSeconds * 1000; // convert to milliseconds
-        this.logManager = logManager;
     }
 
     @PostConstruct
@@ -39,10 +34,9 @@ public class JwtUtil {
 
     public String generateAccessToken(AppUser user) {
         return Jwts.builder()
-                .setSubject(user.getId().toString())
+                .setSubject(user.getEmail())
                 .claim("role", user.getRole())
                 .claim("name", user.getName())
-                .claim("email", user.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -57,8 +51,7 @@ public class JwtUtil {
                     .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException ex) {
-            logManager.logError("No Authentication permission",ex.getStackTrace());
-            return false;
+            throw new SystemException("JWT token is invalid or expired");
         }
     }
 

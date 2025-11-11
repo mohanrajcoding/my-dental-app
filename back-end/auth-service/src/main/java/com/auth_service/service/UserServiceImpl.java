@@ -5,7 +5,7 @@ import com.auth_service.dto.LoginResponse;
 import com.auth_service.dto.SignupRequest;
 import com.auth_service.dto.UserDetails;
 import com.auth_service.entity.AppUser;
-import com.auth_service.exception.AuthServiceException;
+import com.auth_service.exception.BusinessException;
 import com.auth_service.logging.LogManager;
 import com.auth_service.repository.UserRepository;
 import com.auth_service.security.JwtUtil;
@@ -14,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +48,7 @@ public class UserServiceImpl implements UserService{
         logManager.logDebug("UserServiceImpl:: login");
         AppUser user = userRepository.findByEmail(req.getEmail());
         if (user==null || !passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            throw new AuthServiceException("Invalid email or password");
+            throw new BusinessException("Invalid email or password");
         }
         return new LoginResponse(jwtUtil.generateAccessToken(user),user.getRole());
     }
@@ -58,7 +57,7 @@ public class UserServiceImpl implements UserService{
     public void modifyUser(SignupRequest req, Long id) {
         logManager.logDebug("UserServiceImpl:: login");
         AppUser user = userRepository.findById(id).orElseThrow(
-                ()->new AuthServiceException("Existing user not available for userId: "+id));
+                ()->new BusinessException("Existing user not available for userId: "+id));
         if(req.getAddress()!=null){
             user.setAddress(req.getAddress());
         }
@@ -87,7 +86,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public UserDetails getUserById(Long id) {
-        AppUser user = userRepository.findById(id).orElseThrow(()-> new AuthServiceException("User details not available for "+id));
+        AppUser user = userRepository.findById(id).orElseThrow(()-> new BusinessException("User details not available for "+id));
         UserDetails userDetails= new UserDetails();
         userDetails.setAddress(user.getAddress());
         userDetails.setRole(user.getRole());

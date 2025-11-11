@@ -51,9 +51,9 @@
         <appender-ref ref="DEBUG_FILE"/>
     </logger>
 
-    <logger name="APP-ERROR" level="ERROR" additivity="false">
+    <!--<logger name="APP-ERROR" level="ERROR" additivity="false">
         <appender-ref ref="ERROR_FILE"/>
-    </logger>
+    </logger>-->
 
     <!-- Root logger for the app (INFO by default) -->
     <root level="INFO">

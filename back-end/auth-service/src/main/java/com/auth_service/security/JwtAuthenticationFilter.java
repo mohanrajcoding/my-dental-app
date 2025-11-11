@@ -1,5 +1,6 @@
 package com.auth_service.security;
 
+import com.auth_service.logging.LogManager;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,22 +20,24 @@ import java.util.Collections;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
+    private final LogManager logManager;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader!=null && authHeader.startsWith("Bearer ")){
-            String token = authHeader.substring(7);
-            if(jwtUtil.validateToken(token)){
-                Claims claims = jwtUtil.extractClaims(token);
-                String id = claims.getSubject();
-                String role = claims.get("role",String.class);
-
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        id,null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_"+role))
-                );
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                logManager.logDebug("JwtAuthenticationFilter :: token ="+token);
+                if (jwtUtil.validateToken(token)) {
+                    Claims claims = jwtUtil.extractClaims(token);
+                    String id = claims.getSubject();
+                    String role = claims.get("role", String.class);
+                    logManager.logDebug("JwtAuthenticationFilter :: auth Claims"+claims);
+                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                            id, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                }
             }
-        }
-        filterChain.doFilter(request,response);
+            filterChain.doFilter(request, response);
     }
 }
